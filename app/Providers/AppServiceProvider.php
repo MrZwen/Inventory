@@ -6,6 +6,7 @@ use App\Repositories\CategoryRepository;
 use App\Repositories\ItemsRepository;
 use App\Services\ItemService;
 use Illuminate\Support\ServiceProvider;
+use Yajra\DataTables\DataTables;
 
 class AppServiceProvider extends ServiceProvider
 {

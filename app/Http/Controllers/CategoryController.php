@@ -6,61 +6,41 @@ use App\Services\CategoryService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class CategoryController extends Controller
 {
-    protected $categoryService;
+    protected $categoryRepository;
 
-    public function __construct(CategoryService $categoryService)
+    public function __construct(CategoryService $categoryRepository)
     {
-        $this->categoryService = $categoryService;
+        $this->categoryRepository = $categoryRepository;
     }
     public function categories()
     {
-        $categories = $this->categoryService->getAll();
-
-        if (Auth::user()->role->name == 'admin') {
-            return view('admins.pages.category', compact('categories'));
-        } elseif(Auth::user()->role->name == 'staff') {
-            return view('staff.pages.category', compact('categories'));
-        }
+        $categories = $this->categoryRepository->getAll();
+        return view($categories['view'], $categories['categories']);
     }
 
     public function store(Request $request)
     {
-        try {
-            $this->categoryService->create($request->all());
-            if (Auth::user()->role->name == 'admin') {
-                return redirect()->back()->with('success', 'Category created successfully');
-            } elseif(Auth::user()->role->name == 'staff') {
-                return redirect()->back()->with('success', 'Category created successfully');
-            }
-        } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
-        }
+        return $this->categoryRepository->create($request->all());
     }
 
     public function update(Request $request, $id)
     {
-        try {
-            $this->categoryService->update($request->all(), $id);
-            if (Auth::user()->role_id == 1) {
-                return redirect()->back()->with('success', 'Category updated successfully');
-            } elseif(Auth::user()->role_id == 2) {
-                return redirect()->back()->with('success', 'Category updated successfully');
-            }
-        } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
-        }
+        return $this->categoryRepository->update($request->all(), $id);
     }
 
     public function delete($id)
     {
         try {
-            $this->categoryService->delete($id);
-            return redirect()->back()->with('success', 'Category deleted successfully');
+            $this->categoryRepository->delete($id);
+            Alert::toast('Category deleted successfully', 'success', ['timer' => 3000]);
+            return redirect()->back();
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            Alert::toast($e->getMessage(), 'error', ['timer' => 3000]);
+            return redirect()->back();
         }
     }
 }

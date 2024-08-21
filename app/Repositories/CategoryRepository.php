@@ -12,7 +12,7 @@ class CategoryRepository
     }
     public function getAll()
     {
-        return Category::orderBy('created_at', 'desc')->get();
+        return $this->categoryService->getAll();
     }
 
     public function findById($id)
@@ -22,21 +22,17 @@ class CategoryRepository
 
     public function create(array $data)
     {
-        return Category::create($data);
+        return $this->categoryService->create($data);
     }
 
     public function update(array $data, $id)
     {
-        $category = $this->findById($id);
-        $category->update($data);
-        return $category;
+        return $this->categoryService->update($data, $id);
     }
 
     public function delete($id)
     {
-        $category = $this->findById($id);
-        $category->delete();
-        return $category;
+        return $this->categoryService->delete($id);
     }
 }
 

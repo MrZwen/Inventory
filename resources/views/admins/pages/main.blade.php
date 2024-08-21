@@ -41,6 +41,7 @@
         };
 
         function confirmDelete(itemId) {
+            console.log("Delete confirmed for ID: " + itemId);
             Swal.fire({
                 title: 'Are you sure?',
                 text: "You won't be able to revert this!",
@@ -51,6 +52,7 @@
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    console.log("Submitting form for ID: " + itemId);
                     document.getElementById('delete-form-' + itemId).submit();
                 }
             })

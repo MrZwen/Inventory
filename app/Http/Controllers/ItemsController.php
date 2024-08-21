@@ -12,21 +12,21 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class ItemsController extends Controller
 {
-    protected $itemService;
-    public function __construct(ItemService $itemService)
+    protected $itemsRepository;
+    public function __construct(ItemService $itemsRepository)
     {
-        $this->itemService = $itemService;
+        $this->itemsRepository = $itemsRepository;
     }
     
     public function index()
     {
-        $items = $this->itemService->dashboard();
+        $items = $this->itemsRepository->dashboard();
         return view($items['view'], $items['items']);
     }
 
     public function items()
     {
-        $items = $this->itemService->getAll();
+        $items = $this->itemsRepository->getAll();
         return view($items['view'], $items['items']);
     }
 
@@ -49,7 +49,7 @@ class ItemsController extends Controller
     public function store(Request $request)
     {
         $userId = Auth::id();
-        $result = $this->itemService->create($request->all(), $userId);
+        $result = $this->itemsRepository->create($request->all(), $userId);
 
         if (!$result['success']) {
             return redirect()->back()->withErrors($result['errors'])->withInput();
@@ -60,7 +60,7 @@ class ItemsController extends Controller
 
     public function update(Request $request, $id)
     {
-        return $this->itemService->updateItem($id, $request);
+        return $this->itemsRepository->updateItem($id, $request);
     }
 
     // public function updateStaff(Request $request, $id)
@@ -89,6 +89,14 @@ class ItemsController extends Controller
     // }
 
     public function delete($id){
-        $this->itemService->delete($id);
+        try {
+            $this->itemsRepository->delete($id);
+
+            Alert::toast('Item deleted successfully', 'success', ['timer' => 3000]);
+            return redirect()->back();
+        } catch(Exception $e) {
+            Alert::toast('Failed to delete item', 'error', ['timer' => 3000]);
+            return redirect()->back();
+        }
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Support\Facades\Log;
 use Stringable;
 
 class ItemService
@@ -81,7 +82,6 @@ class ItemService
         ]);
 
         if ($validator->fails()) {
-            // Jika validasi gagal, kembalikan kesalahan
             Alert::toast('Validation failed!', 'error', ['timer' => 3000]);
             return ['success' => false, 'errors' => $validator->errors()];
         }
@@ -96,14 +96,11 @@ class ItemService
             $data['image'] = 'storage/' . $imagePath;
         }
 
-        // Tambahkan ID dan user ID
         $data['id'] = Str::uuid()->toString();
         $data['users_id'] = $userId;
 
-        // Buat item melalui repository
         $item = $this->itemsRepository->create($data, $userId);
 
-        // Respon berdasarkan peran pengguna
         if (Auth::user()->role->name == 'admin') {
             if ($item) {
                 Alert::toast('Item created successfully!', 'success', ['timer' => 3000]);
@@ -175,26 +172,17 @@ class ItemService
 
     public function delete($id)
     {
-        try {
-            $item = Items::findOrFail($id);
+        $item = Items::find($id);
 
-            if ($item->image) {
-                $imagePath = str_replace('storage/', '', $item->image);
+        if ($item->image) {
+            $imagePath = str_replace('storage/', '', $item->image);
     
-                if (Storage::disk('public')->exists($imagePath)) {
-                    Storage::disk('public')->delete($imagePath);
-                }
+            if (Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
             }
-    
-            $item->delete();
-    
-            Alert::toast('Item deleted successfully!', 'success', ['timer' => 1500]);
-            return redirect()->back();
-    
-        } catch (\Exception $e) {
-            Alert::toast('Failed to delete item.', 'error', ['timer' => 1500]);
-            return redirect()->back();
         }
+    
+        $item->delete();
     }
 }   
 ?>

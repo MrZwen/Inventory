@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class AuthController extends Controller
@@ -19,40 +20,29 @@ class AuthController extends Controller
             'username' => 'required',
             'password' => 'required',
         ]);
-
+    
         $login = [
             'username' => $request->username,
-            'password' => $request->password
+            'password' => $request->password,
         ];
-
-        // dd($login);
-
+    
         if (Auth::attempt($login)) {
             $user = Auth::user();
             $roleName = $user->role->name;
     
+            Cookie::queue('username', $user->username, 480);
+    
+            Alert::toast('Login successful!', 'success', ['timer' => 1500]);
+    
             if ($roleName == 'admin') {
-                Alert::toast('Login successful!', 'success', ['timer' => 1500]);
-                return redirect('/admin-dashboard');
-            } 
-            else if ($roleName == 'staff') {
-                Alert::toast('Login successful!', 'success', ['timer' => 3000]);
-                return redirect('/staff-dashboard');
+                return redirect()->intended('/admin-dashboard');
+            } elseif ($roleName == 'staff') {
+                return redirect()->intended('/staff-dashboard');
             }
         } else {
             Alert::toast('Login failed!', 'error', ['timer' => 3000]);
-            return redirect('/login');
+            return redirect('/login')->withInput();
         }
-
-        // if(Auth::attempt($login)){
-        //     if(Auth::user()->name == 1){
-        //         return redirect('/admin-dashboard');
-        //     } else if(Auth::user()->role_id == 2){
-        //         return redirect('/staff-dashboard');
-        //     }
-        // } else {
-        //     return redirect('/login')->with('error', 'Invalid credentials');
-        // }
     }
 
     public function logout(){
