@@ -1,6 +1,7 @@
 <?php
  
 namespace App\Repositories;
+
 use App\Models\Items;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,36 +14,41 @@ class ItemsRepository
         $this->items = $items;
     }
 
-    public function dashboard() {
-        return $this->itemService->dashboard();
-    }
-
     public function getAll()
     {
-        $this->itemService->getAll();
+        return $this->items->with(['user:id,username', 'category:id,name'])
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
-    public function findById($id){
-        $items = Items::where('id', $id)->firstOrFail();
-
-        return $items;
-    }
-
-    public function create(array $data, $userId){
-        return Items::create($data, $userId);  
-    }
-
-    public function update(array $data, $id)
+    public function findById($id)
     {
-       $this->itemService->update($data, $id);
+        return $this->items->findOrFail($id);
+    }
+
+    public function create(array $data)
+    {
+        return $this->items->create($data);
+    }
+
+    public function update($id, array $data)
+    {
+        $item = $this->findById($id);
+        return $item->update($data);
     }
 
     public function delete($id)
     {
-        $this->itemService->delete($id);
+        $item = $this->findById($id);
+
+        if ($item->image) {
+            $imagePath = str_replace('storage/', '', $item->image);
+            if (Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+            }
+        }
+
+        return $item->delete();
     }
-
 }
-
-
 ?>

@@ -3,64 +3,47 @@
 @section('title', 'Category')
 
 @section('content')
-    <div class="w-full p-5">
-        <h2 class="text-2xl font-semibold mb-2">Category</h2>
-
-        <!-- Table -->
-        <div class="overflow-x-auto rounded-lg shadow-lg shadow-black/15 mb-6">
-            <table class="w-full">
-                <thead class="bg-white border-b-2 border-gray-200">
-                    <tr>
-                        <th class="p-3 text-sm font-semibold tracking-wide text-center whitespace-nowrap">No</th>
-                        <th class="p-3 text-sm font-semibold tracking-wide text-center whitespace-nowrap">Name</th>
-                        <th class="p-3 text-sm font-semibold tracking-wide text-center whitespace-nowrap">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($categories as $category)
-                    <tr class="bg-white">
-                        <td class="p-3 text-sm text-gray-700 text-center whitespace-nowrap">{{ $loop->iteration }}</td>
-                        <td class="p-3 text-sm text-gray-700 text-center whitespace-nowrap">{{$category->name}}</td>
-                        <td>
-                            <div class="flex justify-center gap-2">
-                                <div class="">
-                                    <button data-modal-target="modal-{{ $category->id }}" data-modal-toggle="modal-{{ $category->id }}" class="block text-white bg-green-500 hover:p-2.5 hover:bg-green-600 font-medium rounded-lg text-md p-2.5 text-center" type="button">
-                                        <i class="bi bi-pencil-fill"></i>
-                                    </button>
-                                    
-                                </div>
-                                <div class="">
-                                    <form action="{{ route('categories.destroy', $category->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this item?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="block text-white bg-red-500 hover:p-2.5 hover:bg-red-600 font-medium rounded-lg text-md p-2.5 text-center">
-                                            <i class="bi bi-trash-fill"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </td>
-                    </tr> 
-                    {{-- Detail Modal --}}
-                    @include('admins.modals.editcategory', ['category' => $category])
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Form Tambah Category -->
-        <div class="mt-6 bg-white p-6 rounded-lg shadow-lg shadow-black/15">
-            <h3 class="text-xl font-semibold mb-4">Tambah Data Category</h3>
-            <form action="{{ route('categories.store.admin') }}" method="POST">
-                @csrf
-                <div class="mb-4">
-                    <label for="name" class="block text-sm font-medium text-gray-700">Category Name</label>
-                    <input type="text" name="name" id="name" class="mt-1 block w-full p-2.5 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
-                </div>
-                <div class="flex justify-end">
-                    <button type="submit" class="block text-white bg-blue-700 hover:p-1.5 hover:bg-blue-800 font-medium rounded-lg text-md p-1.5 text-center">Add Category</button>
-                </div>
-            </form>
-        </div>
+<div class="w-full p-5 flex flex-col gap-4">
+    <!-- Header and Button Container -->
+    <div class="flex items-center justify-between mb-4 relative z-10">
+        <h2 class="text-2xl font-bold text-gray-800">Items</h2>
+        <button data-modal-target="static-modal" data-modal-toggle="static-modal" class="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm px-3 py-1.5 shadow-md transform transition-all duration-300 ease-in-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <i class="bi bi-plus"></i> Add Category
+        </button>
     </div>
+
+    <div class="w-full flex flex-col bg-white shadow-md rounded-lg p-4">
+        <table class="display w-full flex-grow text-sm text-gray-700 table-auto" id="example">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2 w-1/4">No</th>
+                    <th class="px-4 py-2 w-1/4">Name</th>
+                    <th class="px-4 py-2 w-1/4">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($categories as $category)
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-2 text-center">{{ $loop->iteration }}</td>
+                        <td class="px-4 py-2">{{$category->name}}</td>
+                        <td class="px-4 py-2 flex justify-center space-x-2">
+                            <button data-modal-target="modal-{{ $category->id }}" data-modal-toggle="modal-{{ $category->id }}" class="block text-white bg-green-500 hover:p-1.5 hover:bg-green-600 font-medium rounded-lg text-md p-1.5 text-center" type="button">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <form action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block" id="delete-form-{{ $category->id }}">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" onclick="confirmDelete('{{ $category->id }}', 'category')" class="block text-white bg-red-500 hover:p-1.5 hover:bg-red-600 font-medium rounded-lg text-md p-1.5 text-center">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </form>                           
+                        </td>
+                    </tr>
+                    @include('admins.modals.editcategory', ['category' => $category])
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+   @include('admins.modals.addcategory')
+</div>
 @endsection

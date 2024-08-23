@@ -39,12 +39,12 @@
                         <td>
                             <div class="flex justify-center gap-2">
                                 <div class="">
-                                    <button data-modal-target="modal-{{ $item->id }}" data-modal-toggle="modal-{{ $item->id }}" class="block text-white bg-blue-700 hover:p-2.5 hover:bg-blue-800 font-medium rounded-lg text-md p-2.5 text-center" type="button">
+                                    <button data-modal-target="modal-{{ $item->id }}" data-modal-toggle="modal-{{ $item->id }}" class="block text-white bg-blue-700 hover:p-1.5 hover:bg-blue-800 font-medium rounded-lg text-md p-1.5 text-center" type="button">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </div>
                                 <div class="">
-                                    <button data-modal-target="modal-edit-{{ $item->id }}" data-modal-toggle="modal-edit-{{ $item->id }}" class="block text-white bg-green-500 hover:p-2.5 hover:bg-green-600 font-medium rounded-lg text-md p-2.5 text-center" type="button">
+                                    <button data-modal-target="modal-edit-{{ $item->id }}" data-modal-toggle="modal-edit-{{ $item->id }}" class="block text-white bg-green-500 hover:p-1.5 hover:bg-green-600 font-medium rounded-lg text-md p-1.5 text-center" type="button">
                                         <i class="bi bi-pencil-fill"></i>
                                     </button>
                                 </div>

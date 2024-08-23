@@ -10,5 +10,9 @@ class Category extends Model
 {
     use HasFactory, HasUuids;
 
+    public function items()
+    {
+        return $this->hasMany(Items::class);
+    }
     protected $guarded = [];
 }

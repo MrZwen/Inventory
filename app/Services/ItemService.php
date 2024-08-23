@@ -1,9 +1,9 @@
 <?php 
+
 namespace App\Services;
 
-use App\Models\Category;
-use App\Models\Items;
 use App\Repositories\ItemsRepository;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -11,48 +11,39 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use RealRashid\SweetAlert\Facades\Alert;
-use Illuminate\Support\Facades\Log;
-use Stringable;
 
 class ItemService
 {
     protected $itemsRepository;
+
     public function __construct(ItemsRepository $itemsRepository)
     {
         $this->itemsRepository = $itemsRepository;
     }
 
-    public function dashboard(){
-        $totalStock = Items::sum('stock');
-        $lowStockItems = Items::where('stock', '<=', 10)->count();
+    public function dashboard()
+    {
+        $totalStock = $this->itemsRepository->getAll()->sum('stock');
+        $lowStockItems = $this->itemsRepository->getAll()->where('stock', '<=', 10)->count();
         $totalCategories = Category::count();
+
         $data = compact('totalStock', 'lowStockItems', 'totalCategories');
-        
-        if (Auth::user()->role->name == 'admin') {
-            $view = 'admins.pages.dashboard';
-        } elseif(Auth::user()->role->name == 'staff') {
-            $view = 'staff.pages.dashboard';
-        }
+
+        $roleName = Auth::user()->role->name;
+        $view = $roleName == 'admin' ? 'admins.pages.dashboard' : 'staff.pages.dashboard';
+
         return ['view' => $view, 'items' => $data];
     }
 
     public function getAll()
     {
-        $items = Items::with(['user:id,username', 'category:id,name'])
-        ->orderBy('created_at', 'desc')
-        ->get();
-
-        $categories = Category::all();
+        $items = $this->itemsRepository->getAll();
+        $categories = Category::select('id', 'name')->get();
 
         $data = compact('items', 'categories');
 
         $roleName = Auth::user()->role->name;
-
-        if ($roleName == 'admin') {
-            $view = 'admins.pages.items';
-        } elseif ($roleName == 'staff') {
-            $view = 'staff.pages.items';
-        }
+        $view = $roleName == 'admin' ? 'admins.pages.items' : 'staff.pages.items';
 
         return ['view' => $view, 'items' => $data];
     }
@@ -64,13 +55,6 @@ class ItemService
 
     public function create(array $data, $userId)
     {
-        // Debugging untuk memastikan gambar ada
-        if (!isset($data['image'])) {
-            Alert::toast('Image is not present in the request!', 'error', ['timer' => 3000]);
-            return ['success' => false, 'errors' => ['image' => 'Image is required']];
-        }
-
-        // Validasi data
         $validator = Validator::make($data, [
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -86,37 +70,26 @@ class ItemService
             return ['success' => false, 'errors' => $validator->errors()];
         }
 
-        // Proses upload gambar
         if (isset($data['image'])) {
-            $image = $data['image'];
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $imagePath = $image->storeAs('images', $imageName, 'public');
-
-            // Tambahkan path gambar ke array data
-            $data['image'] = 'storage/' . $imagePath;
+            $imageName = time() . '.' . $data['image']->getClientOriginalExtension();
+            $data['image'] = 'storage/' . $data['image']->storeAs('images/items', $imageName, 'public');
         }
 
         $data['id'] = Str::uuid()->toString();
         $data['users_id'] = $userId;
 
-        $item = $this->itemsRepository->create($data, $userId);
+        $item = $this->itemsRepository->create($data);
 
-        if (Auth::user()->role->name == 'admin') {
-            if ($item) {
-                Alert::toast('Item created successfully!', 'success', ['timer' => 3000]);
-            } else {
-                Alert::toast('Failed to create item.', 'error', ['timer' => 1500]);
-            }
-        } elseif (Auth::user()->role->name == 'staff') {
-            Alert::toast('Item created successfully!', 'success', ['timer' => 1500]);
-            Alert::success('Success', 'Item created successfully!');
-        }
+        $message = $item ? 'Item created successfully!' : 'Failed to create item.';
+        $type = $item ? 'success' : 'error';
+        Alert::toast($message, $type, ['timer' => 3000]);
 
         return ['success' => true, 'item' => $item];
     }
 
-    public function updateItem($id, Request $request): RedirectResponse
+    public function updateItem($id, Request $request): array
     {
+        // Validasi input
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
@@ -126,63 +99,42 @@ class ItemService
             'status' => 'required|in:available,unavailable',
             'image' => 'nullable|image|max:2048',
         ]);
-    
-        $item = $this->findById($id);
-    
-        if ($item) {
-            if ($request->hasFile('image')) {
-                // Hapus gambar lama jika ada
-                if ($item->image) {
-                    $oldImagePath = str_replace('storage/', '', $item->image);
-                    if (Storage::disk('public')->exists($oldImagePath)) {
-                        Storage::disk('public')->delete($oldImagePath);
-                    }
-                }
-    
-                // Upload dan simpan path gambar baru
-                $image = $request->file('image');
-                $imageName = time() . '.' . $image->getClientOriginalExtension();
-                $imagePath = $image->storeAs('images', $imageName, 'public');
-    
-                // Tambahkan path gambar baru ke array data
-                $data['image'] = 'storage/' . $imagePath;
-            }
-    
-            // Update status jika stok 0
-            if ($data['stock'] == 0) {
-                $data['status'] = 'unavailable';
-            } else {
-                $data['status'] = 'available';
-            }
-    
-            // Lakukan update item
-            $item->update($data);
 
-            if (Auth::user()->role->name == 'admin') {
-                Alert::toast('Item updated successfully!', 'success', ['timer' => 3000]);
-            } elseif (Auth::user()->role->name == 'staff') {
-                Alert::toast('Item updated successfully!', 'success', ['timer' => 1500]);
-            }         
+        // Ambil data item lama dari repository
+        $item = $this->itemsRepository->findById($id);
 
-            return redirect()->back();
+        // Tangani gambar
+        if ($request->hasFile('image')) {
+            // Hapus gambar lama jika ada
+            if ($item->image && file_exists(public_path($item->image))) {
+                unlink(public_path($item->image));
+            }
+
+            // Simpan gambar baru
+            $imageName = time() . '.' . $request->image->getClientOriginalExtension();
+            $data['image'] = 'storage/' . $request->image->storeAs('images/items', $imageName, 'public');
+        } else {
+            // Jika tidak ada gambar baru, pertahankan gambar lama
+            $data['image'] = $item->image;
         }
-        Alert::toast('Failed to update item.', 'error', ['timer' => 1500]);
-        return redirect()->back();
+
+        // Update status berdasarkan stok
+        $data['status'] = $data['stock'] == 0 ? 'unavailable' : 'available';
+
+        // Update item
+        $updated = $this->itemsRepository->update($id, $data);
+
+        // Kembalikan hasil
+        return [
+            'success' => $updated,
+        ];
     }
+
 
     public function delete($id)
     {
-        $item = Items::find($id);
-
-        if ($item->image) {
-            $imagePath = str_replace('storage/', '', $item->image);
-    
-            if (Storage::disk('public')->exists($imagePath)) {
-                Storage::disk('public')->delete($imagePath);
-            }
-        }
-    
-        $item->delete();
+        $this->itemsRepository->delete($id);
+        Alert::toast('Item deleted successfully!', 'success', ['timer' => 3000]);
     }
-}   
+}
 ?>

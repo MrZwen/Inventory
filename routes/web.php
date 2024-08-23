@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,6 +26,10 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin-dashboard', [ItemsController::class, 'index']);
+    Route::get('/users', [UserController::class, 'users'])->name('users.index');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/delete/{id}', [UserController::class, 'delete'])->name('users.destroy');
     Route::get('/items', [ItemsController::class, 'items'])->name('items.index');
     Route::post('/items', [ItemsController::class, 'store'])->name('items.store');
     Route::get('/items/{id}', [ItemsController::class, 'show']);
