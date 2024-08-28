@@ -3,14 +3,14 @@
 @section('title', 'Settings')
 
 @section('content')
-<div class="container mx-auto p-6">
+<div class="container mx-auto p-6 ">
     <h1 class="text-2xl font-semibold mb-4">Settings</h1>
 
-    <form action="{{ route('settings.update.admin') }}" method="POST" class="bg-white p-6 rounded shadow">
+    <form action="{{ route('settings.update.admin') }}" method="POST" class="bg-white max-w-md p-6 rounded shadow">
         @csrf
 
         <div class="mb-4">
-            <label for="low_stock_threshold" class="block text-gray-700 font-medium mb-2">Low Stock Threshold</label>
+            <label for="low_stock_threshold" class="block text-gray-700 font-medium mb-2">Low Stock Items</label>
             <input type="number" name="low_stock_threshold" id="low_stock_threshold" value="{{ $threshold }}"
                 class="border border-gray-300 p-2 w-full rounded">
             @error('low_stock_threshold')

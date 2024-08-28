@@ -32,13 +32,17 @@ class UserRepository
     public function update($id, array $data)
     {
         $user = $this->findById($id);
-        
+
+        if (!isset($data['role_id'])) {
+            $data['role_id'] = $user->role_id;
+        }
+    
         if (isset($data['password']) && !empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         } else {
             unset($data['password']);
         }
-
+    
         return $user->update($data);
     }
 

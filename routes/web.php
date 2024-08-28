@@ -49,6 +49,7 @@ Route::middleware(['auth', 'staff'])->group(function () {
     Route::get('/staff-dashboard', [ItemsController::class, 'index']);
     Route::get('/staff/settings', [SettingController::class, 'edit'])->name('settings.edit.staff');
     Route::post('/staff/settings/update', [SettingController::class, 'update'])->name('settings.update.staff');
+    Route::get('/users-staff', [UserController::class, 'users'])->name('users.index.staff');
     Route::get('/items-staff', [ItemsController::class, 'items'])->name('items.index.staff');
     Route::post('/items-staff', [ItemsController::class, 'store'])->name('items.store.staff');
     Route::put('/items/{id}', [ItemsController::class, 'update'])->name('items.update.staff');

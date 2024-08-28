@@ -32,14 +32,6 @@
 
         dropdown();
 
-        function Open(){
-            const sidebar = document.querySelector('.sidebar');
-            const navbar = document.querySelector('nav > div');
-
-            sidebar.classList.toggle('left-[-300px]');
-            navbar.classList.toggle('navbar-shift');
-        };
-
         function confirmDelete(itemId, entityType) {
             Swal.fire({
                 title: 'Are you sure?',
