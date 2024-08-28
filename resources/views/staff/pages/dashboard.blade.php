@@ -27,5 +27,73 @@
             <p class="text-sm text-gray-500 mt-1">Total number of categories</p>
         </div>
     </div>
+
+    <div class="flex justify-between items-center mb-4 mt-4">
+        <h1 class="text-3xl font-bold text-gray-800">Stock Report</h1>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <div class="bg-white shadow-md rounded-lg p-4">
+            <h2 class="text-xl font-semibold text-gray-700">Total Stock per Category</h2>
+            <canvas id="totalStockChart"></canvas>
+        </div>
+
+        <div class="bg-white shadow-md rounded-lg p-4">
+            <h2 class="text-xl font-semibold text-gray-700">Total Item per Category</h2>
+            <canvas id="itemCountChart"></canvas>
+        </div>
+    </div>
 </div>
 @endsection
+
+@push('scripts')
+    <script>
+        const ctxTotalStock = document.getElementById('totalStockChart').getContext('2d');
+        const ctxItemCount = document.getElementById('itemCountChart').getContext('2d');
+
+        // Total Stock per Category
+        new Chart(ctxTotalStock, {
+            type: 'bar',
+            data: {
+                labels: @json($categoryNames),
+                datasets: [{
+                    label: 'Total Stock',
+                    data: @json($stockPerCategory),
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Jumlah Item per Category (Bar Chart)
+        new Chart(ctxItemCount, {
+            type: 'bar',
+            data: {
+                labels: @json($categoryNames),
+                datasets: [{
+                    label: 'Total Item',
+                    data: @json($itemCountPerCategory),
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)', // Changed color to a teal shade
+                    borderColor: 'rgba(75, 192, 192, 1)',      // Changed color to a teal shade
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+@endpush

@@ -7,23 +7,38 @@
         </div>
         <hr class="my-2 text-gray-600">
     </div>
-    <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-800 text-white">
+
+    <!-- Dashboard Link -->
+    <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-800 text-white 
+        {{ request()->is('admin-dashboard') ? 'bg-blue-800' : '' }}">
         <i class="bi bi-house-door-fill text-white"></i>
         <a href="/admin-dashboard" class="text-[15px] ml-4 text-gray-200">Dashboard</a>
     </div>
-    <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-800 text-white">
+
+    <!-- Users Link -->
+    <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-800 text-white 
+        {{ request()->is('users') ? 'bg-blue-800' : '' }}">
         <i class="bi bi-people-fill text-white"></i>
         <a href="/users" class="text-[15px] ml-4 text-gray-200">Users</a>
     </div>
-    <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-800 text-white">
+
+    <!-- Items Link -->
+    <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-800 text-white 
+        {{ request()->routeIs('items.index') ? 'bg-blue-800' : '' }}">
         <i class="bi bi-clipboard-check-fill text-white"></i>
         <a href="{{ route('items.index') }}" class="text-[15px] ml-4 text-gray-200">Items</a>
     </div>
-    <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-800 text-white">
+
+    <!-- Category Link -->
+    <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-800 text-white 
+        {{ request()->is('categories') ? 'bg-blue-800' : '' }}">
         <i class="bi bi-tags-fill text-white"></i>
         <a href="/categories" class="text-[15px] ml-4 text-gray-200">Category</a>
     </div>
+
     <hr class="my-4 text-gray-600">
+
+    <!-- Logout Link -->
     <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-800 text-white">
         <i class="bi bi-box-arrow-in-right text-white"></i>
         <form id="logout-form" action="{{ route('logout') }}" method="POST" class="ml-4">

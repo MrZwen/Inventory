@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\ItemsRepository;
+use App\Repositories\SettingRepository;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -15,25 +16,41 @@ use RealRashid\SweetAlert\Facades\Alert;
 class ItemService
 {
     protected $itemsRepository;
+    protected $settingRepository;
 
-    public function __construct(ItemsRepository $itemsRepository)
+    public function __construct(ItemsRepository $itemsRepository, SettingRepository $settingRepository)
     {
         $this->itemsRepository = $itemsRepository;
+        $this->settingRepository = $settingRepository;
     }
 
     public function dashboard()
     {
         $totalStock = $this->itemsRepository->getAll()->sum('stock');
-        $lowStockItems = $this->itemsRepository->getAll()->where('stock', '<=', 10)->count();
+        $lowStockThreshold = $this->settingRepository->get('low_stock_threshold')->value;
+        $lowStockItems = $this->itemsRepository->getAll()->where('stock', '<=', $lowStockThreshold)->count();
         $totalCategories = Category::count();
-
-        $data = compact('totalStock', 'lowStockItems', 'totalCategories');
-
+        
+        // Dapatkan data untuk chart
+        $categories = Category::orderBy('created_at', 'asc')->get();
+        $stockPerCategory = [];
+        $categoryNames = [];
+        $itemCountPerCategory = [];
+    
+        foreach ($categories as $category) {
+            $categoryNames[] = $category->name;
+            $stockPerCategory[] = $category->items->sum('stock');
+            $itemCountPerCategory[] = $category->items->count(); // Add item count per category
+        }
+    
+        $data = compact('totalStock', 'lowStockItems', 'totalCategories', 'categoryNames', 'stockPerCategory', 'itemCountPerCategory');
+        
         $roleName = Auth::user()->role->name;
         $view = $roleName == 'admin' ? 'admins.pages.dashboard' : 'staff.pages.dashboard';
-
+        
         return ['view' => $view, 'items' => $data];
     }
+    
 
     public function getAll()
     {

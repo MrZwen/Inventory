@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,8 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin-dashboard', [ItemsController::class, 'index']);
+    Route::get('/admin/settings', [SettingController::class, 'edit'])->name('settings.edit.admin');
+    Route::post('/admin/settings/update', [SettingController::class, 'update'])->name('settings.update.admin');
     Route::get('/users', [UserController::class, 'users'])->name('users.index');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
@@ -44,11 +47,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 Route::middleware(['auth', 'staff'])->group(function () {
     Route::get('/staff-dashboard', [ItemsController::class, 'index']);
-    Route::get('/items-staff', [ItemsController::class, 'items']);
+    Route::get('/staff/settings', [SettingController::class, 'edit'])->name('settings.edit.staff');
+    Route::post('/staff/settings/update', [SettingController::class, 'update'])->name('settings.update.staff');
+    Route::get('/items-staff', [ItemsController::class, 'items'])->name('items.index.staff');
     Route::post('/items-staff', [ItemsController::class, 'store'])->name('items.store.staff');
     Route::put('/items/{id}', [ItemsController::class, 'update'])->name('items.update.staff');
-    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store.staff');
     Route::get('/categories-staff', [CategoryController::class, 'categories'])->name('category.index.staff');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store.staff');
     Route::get('/categories-staff/{id}', [CategoryController::class, 'show']);
     Route::put('/categories-staff/{id}', [CategoryController::class, 'update'])->name('categories.update.staff');
 });
