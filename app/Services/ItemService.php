@@ -31,23 +31,29 @@ class ItemService
         $lowStockItems = $this->itemsRepository->getAll()->where('stock', '<=', $lowStockThreshold)->count();
         $totalCategories = Category::count();
         
-        // Dapatkan data untuk chart
         $categories = Category::orderBy('created_at', 'asc')->get();
+        $otherCategory = $categories->firstWhere('name', 'Lainnya'); 
+        $categories = $categories->where('name', '!=', 'Lainnya'); 
+
+        if ($otherCategory) {
+            $categories->push($otherCategory);
+        }
+
         $stockPerCategory = [];
         $categoryNames = [];
         $itemCountPerCategory = [];
-    
+
         foreach ($categories as $category) {
             $categoryNames[] = $category->name;
             $stockPerCategory[] = $category->items->sum('stock');
-            $itemCountPerCategory[] = $category->items->count(); // Add item count per category
+            $itemCountPerCategory[] = $category->items->count(); 
         }
-    
+
         $data = compact('totalStock', 'lowStockItems', 'totalCategories', 'categoryNames', 'stockPerCategory', 'itemCountPerCategory');
-        
+
         $roleName = Auth::user()->role->name;
         $view = $roleName == 'admin' ? 'admins.pages.dashboard' : 'staff.pages.dashboard';
-        
+
         return ['view' => $view, 'items' => $data];
     }
     

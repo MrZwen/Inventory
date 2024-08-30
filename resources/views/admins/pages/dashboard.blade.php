@@ -82,8 +82,8 @@
                 datasets: [{
                     label: 'Total Item',
                     data: @json($itemCountPerCategory),
-                    backgroundColor: 'rgba(75, 192, 192, 0.6)', // Changed color to a teal shade
-                    borderColor: 'rgba(75, 192, 192, 1)',      // Changed color to a teal shade
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)', 
+                    borderColor: 'rgba(75, 192, 192, 1)',      
                     borderWidth: 1
                 }]
             },
