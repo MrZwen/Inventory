@@ -14,7 +14,10 @@ class SettingService
 
     public function getLowStockThreshold()
     {
-        return $this->settingRepository->get('low_stock_threshold')->value;
+        $lowStockThresholdSetting = $this->settingRepository->get('low_stock_threshold');
+    
+    
+        return $lowStockThresholdSetting ? $lowStockThresholdSetting->value : 10; 
     }
 
     public function updateLowStockThreshold($value)

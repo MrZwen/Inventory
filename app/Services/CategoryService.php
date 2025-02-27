@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Repositories\CategoryRepository;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class CategoryService
@@ -40,22 +41,38 @@ class CategoryService
 
     public function create(array $data)
     {
+        // Validasi input
+        $validator = Validator::make($data, [
+            'name' => 'required|string|max:255|unique:categories,name',
+        ], [
+            'name.required' => 'Category name is required.',
+            'name.unique' => 'Category name already exists.', // Pesan error jika nama kategori sudah ada
+        ]);
+
+        // Jika validasi gagal, tampilkan pesan error
+        if ($validator->fails()) {
+            Alert::toast($validator->errors()->first(), 'error', ['timer' => 3000]);
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        // Simpan kategori jika validasi lolos
         $category = Category::create($data);
         $roleName = Auth::user()->role->name;
 
         if ($category) {
             Alert::toast('Category created successfully!', 'success', ['timer' => 3000]);
+
             if ($roleName == 'admin') {
                 return redirect()->route('category.index');
-            } else if($roleName == 'staff'){
+            } elseif ($roleName == 'staff') {
                 return redirect()->route('category.index.staff');
             }
-        } else {
-            Alert::toast('Failed to create category!', 'error', ['timer' => 3000]);
-            return redirect()->route('category.index');
         }
-    }
 
+        // Jika gagal menyimpan kategori
+        Alert::toast('Failed to create category!', 'error', ['timer' => 3000]);
+        return redirect()->route('category.index');
+    }
     public function update(array $data, $id)
     {
         $category = $this->findById($id);

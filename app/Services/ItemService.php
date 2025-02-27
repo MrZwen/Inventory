@@ -27,7 +27,8 @@ class ItemService
     public function dashboard()
     {
         $totalStock = $this->itemsRepository->getAll()->sum('stock');
-        $lowStockThreshold = $this->settingRepository->get('low_stock_threshold')->value;
+        $lowStockThresholdSetting = $this->settingRepository->get('low_stock_threshold');
+        $lowStockThreshold = $lowStockThresholdSetting ? $lowStockThresholdSetting->value : 10;
         $lowStockItems = $this->itemsRepository->getAll()->where('stock', '<=', $lowStockThreshold)->count();
         $totalCategories = Category::count();
         
@@ -76,24 +77,69 @@ class ItemService
         return $this->itemsRepository->findById($id);
     }
 
+    // public function create(array $data, $userId)
+    // {
+    //     $validator = Validator::make($data, [
+    //         'name' => 'required|string|max:255|unique:items',
+    //         'description' => 'required|string',
+    //         'category_id' => 'required|exists:categories,id',
+    //         'price' => 'required|numeric',
+    //         'stock' => 'required|integer',
+    //         'status' => 'required|in:available,unavailable',
+    //         'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         Alert::toast('Validation failed!', 'error', ['timer' => 3000]);
+    //         return ['success' => false, 'errors' => $validator->errors()];
+    //     }
+
+    //     if (isset($data['image'])) {
+    //         $imageName = time() . '.' . $data['image']->getClientOriginalExtension();
+    //         $data['image'] = 'storage/' . $data['image']->storeAs('images/items', $imageName, 'public');
+    //     }
+
+    //     $data['id'] = Str::uuid()->toString();
+    //     $data['users_id'] = $userId;
+
+    //     $item = $this->itemsRepository->create($data);
+
+    //     $message = $item ? 'Item created successfully!' : 'Failed to create item.';
+    //     $type = $item ? 'success' : 'error';
+    //     Alert::toast($message, $type, ['timer' => 3000]);
+
+    //     return ['success' => true, 'item' => $item];
+    // }
+
     public function create(array $data, $userId)
     {
         $validator = Validator::make($data, [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:items',
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
             'status' => 'required|in:available,unavailable',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ], [
+            'image.required' => 'Image is required.',
+            'image.mimes' => 'Image must be a JPEG, PNG, JPG, GIF, or SVG file.',
+            'name.unique' => 'Item name must be unique.',
         ]);
 
         if ($validator->fails()) {
-            Alert::toast('Validation failed!', 'error', ['timer' => 3000]);
-            return ['success' => false, 'errors' => $validator->errors()];
+            $errors = $validator->errors();
+
+            foreach ($errors->messages() as $field => $messages) {
+                foreach ($messages as $message) {
+                    Alert::toast(ucfirst($field) . ': ' . $message, 'error', ['timer' => 3000]);
+                }
+            }
+            
+            return ['success' => false, 'errors' => $errors];
         }
 
-        if (isset($data['image'])) {
+        if (!empty($data['image'])) {
             $imageName = time() . '.' . $data['image']->getClientOriginalExtension();
             $data['image'] = 'storage/' . $data['image']->storeAs('images/items', $imageName, 'public');
         }
@@ -109,6 +155,7 @@ class ItemService
 
         return ['success' => true, 'item' => $item];
     }
+
 
     public function updateItem($id, Request $request): array
     {
